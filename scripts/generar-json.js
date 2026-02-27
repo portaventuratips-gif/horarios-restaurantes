@@ -85,6 +85,7 @@ async function generarYSubir() {
     const res = await fetch(API_URL, { headers: { "x-api-key": API_KEY } });
     if (!res.ok) throw new Error("Error al obtener datos de Adventure Labs");
     const shops = await res.json();
+    console.log("Datos de la API:", shops);
 
     const data = shops.map(shop => ({
       nombre: nombreMap[shop.name] || shop.name,
