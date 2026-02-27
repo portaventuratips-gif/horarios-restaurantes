@@ -92,7 +92,7 @@ async function generarYSubir() {
 
   const jsonString = JSON.stringify(data, null, 2);
 
-  const octokit = new Octokit({ auth: GITHUB_TOKEN });
+  const octokit = new Octokit({ auth: TOKEN });
 
   let sha;
   try {
