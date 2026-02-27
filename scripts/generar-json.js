@@ -26,6 +26,8 @@ async function generarYSubir() {
   try {
     console.log("📡 Consultando API de Adventure Labs...");
 
+    console.log({ API_KEY: API_KEY?.substring(0,10)+"****", TOKEN: TOKEN?.substring(0,10)+"****", OWNER, REPO });
+
     const res = await fetch(API_URL, { headers: { "x-api-key": "ApiKey 1234567890abcdef!" } });
     if (!res.ok) throw new Error(`Error API: ${res.status} ${res.statusText}`);
 
