@@ -1,33 +1,26 @@
 name: Generar JSON de horarios
 
-# Se ejecuta cada minuto y permite ejecución manual
 on:
   schedule:
-    - cron: '*/1 * * * *'   # cada minuto
-  workflow_dispatch:          # permite lanzar manualmente
+    - cron: '*/1 * * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Clonar el repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # 3️⃣ Instalar dependencias dentro de scripts
       - name: Instalar dependencias
-        run: |
-          cd scripts
-          npm install node-fetch @octokit/rest
+        run: npm install
 
-      # 4️⃣ Ejecutar el script
       - name: Ejecutar generar-json.js
         run: node scripts/generar-json.js
         env:
