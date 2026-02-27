@@ -1,39 +1,19 @@
-name: Generar JSON de horarios
+name: Actualizar Horarios
 
-# Se ejecuta cada minuto y también permite ejecución manual
 on:
   schedule:
-    - cron: '*/1 * * * *'  # cada minuto
+    - cron: '*/1 * * * *' # cada minuto
   workflow_dispatch:
 
 jobs:
-  build:
+  actualizar-json:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Traer el repositorio
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      # 2️⃣ Configurar Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      # 3️⃣ Instalar dependencias en la carpeta scripts
-      - name: Instalar dependencias
-        run: npm install
-        working-directory: ./scripts
-
-      # 4️⃣ Ejecutar el script para generar y subir horarios.json
-      - name: Ejecutar generar-json.js
-        run: node generar-json.js
-        working-directory: ./scripts
-        env:
-          API_KEY: ${{ secrets.API_KEY }}
-          TOKEN: ${{ secrets.TOKEN }}
-          OWNER: TU_USUARIO          # tu usuario GitHub
-          REPO: horarios-restaurantes
-          PATH: horarios.json
-          BRANCH: main
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '20' }
+      - run: npm install node-fetch@2 @octokit/rest
+      - env:
+          API_KEY: ${{ secrets.ADVENTURELABS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/generar-json.js
