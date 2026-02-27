@@ -1,0 +1,11 @@
+{
+  "name": "horarios-restaurantes",
+  "version": "1.0.0",
+  "description": "Generar JSON de horarios y subir a GitHub",
+  "main": "generar-json.js",
+  "type": "commonjs",
+  "dependencies": {
+    "@octokit/rest": "^20.0.0",
+    "node-fetch": "^3.3.2"
+  }
+}
