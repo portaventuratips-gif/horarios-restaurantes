@@ -3,7 +3,7 @@ const { Octokit } = require("@octokit/rest");
 
 const API_URL = "https://api.adventurelabs.xyz/restaurants/";
 const API_KEY = process.env.API_KEY;       // tu clave Adventure Labs
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // PAT con repo
+const TOKEN = process.env.TOKEN; // PAT con repo
 const OWNER = "TU_USUARIO";
 const REPO = "horarios-restaurantes";
 const PATH = "horarios.json";
@@ -29,7 +29,7 @@ async function generarYSubir() {
 
   const jsonString = JSON.stringify(data, null, 2);
 
-  const octokit = new Octokit({ auth: GITHUB_TOKEN });
+  const octokit = new Octokit({ auth: TOKEN });
 
   let sha;
   try {
