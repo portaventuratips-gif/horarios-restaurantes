@@ -13,10 +13,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Instalar dependencias
-        run: npm install node-fetch@2
+        run: npm install node-fetch@
 
       - name: Ejecutar script para generar horarios.json
-        run: node generar-json.js
+        run: node scripts/generar-json.js
         env:
           API_KEY: ${{ secrets.API_KEY }}
           TOKEN: ${{ secrets.TOKEN }}
