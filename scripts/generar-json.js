@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 
 // ---------------- CONFIGURACIÓN ----------------
 const TOKEN = process.env.TOKEN;   // tu Personal Access Token GitHub
-const OWNER = portaventuratips-gif;   // tu usuario GitHub
+const OWNER = "portaventuratips-gif";   // tu usuario GitHub
 const REPO = process.env.REPO;     // nombre del repo
 const PATH = "horarios.json";      // archivo en el repo
 const BRANCH = "main";
