@@ -1,9 +1,7 @@
-// generar-json.js
+// generar-json.js (ES Module)
 
-// -------------------------------------
-// CONFIGURACIÓN DESDE SECRETS
-// -------------------------------------
-const { Octokit } = require("@octokit/rest");
+// ---------------- CONFIGURACIÓN ----------------
+import { Octokit } from "@octokit/rest";
 
 const API_URL = "https://api.adventurelabs.xyz/restaurants/";
 const API_KEY = process.env.API_KEY;   // tu API Key Adventure Labs
@@ -13,9 +11,7 @@ const REPO = process.env.REPO;         // nombre del repo
 const PATH = "horarios.json";          // archivo en el repo
 const BRANCH = "main";
 
-// -------------------------------------
-// Mapeo de nombres (puedes completar todos)
-// -------------------------------------
+// ---------------- MAPEOS ----------------
 const nombreMap = {
   "Aloha": "Aloha",
   "Altai": "Altai",
@@ -25,9 +21,7 @@ const nombreMap = {
   // ... agrega todos tus restaurantes ...
 };
 
-// -------------------------------------
-// FUNCION PRINCIPAL
-// -------------------------------------
+// ---------------- FUNCION PRINCIPAL ----------------
 async function generarYSubir() {
   try {
     console.log("📡 Consultando API de Adventure Labs...");
@@ -43,18 +37,12 @@ async function generarYSubir() {
       return;
     }
 
-    // -------------------------------------
-    // Generar objeto JSON
-    // -------------------------------------
     const data = shops.map(shop => ({
       nombre: nombreMap[shop.name] || shop.name,
       horarios: shop.schedule?.map(slot => `${slot.open} - ${slot.close}`) || []
     }));
 
     const jsonString = JSON.stringify(data, null, 2);
-
-    console.log("📦 JSON generado, intentando subir a GitHub...");
-
     const octokit = new Octokit({ auth: TOKEN });
 
     // Comprobar si existe el archivo para obtener SHA
@@ -72,7 +60,6 @@ async function generarYSubir() {
       console.log("🔹 Archivo no existe, se creará nuevo");
     }
 
-    // Subir el JSON
     await octokit.repos.createOrUpdateFileContents({
       owner: OWNER,
       repo: REPO,
@@ -89,7 +76,5 @@ async function generarYSubir() {
   }
 }
 
-// -------------------------------------
-// EJECUTAR
-// -------------------------------------
+// ---------------- EJECUTAR ----------------
 generarYSubir();
