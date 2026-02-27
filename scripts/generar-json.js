@@ -1,15 +1,3 @@
-console.log("Empezando script...");
-console.log({ API_KEY, TOKEN: TOKEN?.substring(0, 4)+"****", OWNER, REPO, PATH, BRANCH });
-
-const shops = await res.json();
-console.log("API devuelve:", shops.length, "restaurantes");
-
-if (!shops || shops.length === 0) {
-  console.log("No hay datos para generar JSON");
-  return;
-}
-
-const fetch = require("node-fetch");
 const { Octokit } = require("@octokit/rest");
 
 const API_URL = "https://api.adventurelabs.xyz/restaurants/";
