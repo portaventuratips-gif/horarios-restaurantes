@@ -1,3 +1,4 @@
+const fetch = require("node-fetch");
 const { Octokit } = require("@octokit/rest");
 
 const API_URL = "https://api.adventurelabs.xyz/restaurants/";
