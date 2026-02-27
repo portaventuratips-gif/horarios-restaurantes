@@ -58,7 +58,7 @@ const nombreMap = {
   "La Posada de los Gnomos": "La Posada de los Gnomos",
   "Loggers Creppe - You by Danone": "Loggers Creppe  - You by Danone",
   "Long Branch Saloon": "Long Branch Saloon",
-  "Marco Polo": "Marco Polo",
+  " Marco Polo": "Marco Polo",
   "Moll Vell": "Moll Vell",
   "Paddock": "Paddock",
   "Palma Real": "Palma Real",
