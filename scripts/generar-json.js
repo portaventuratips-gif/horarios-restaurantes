@@ -1,4 +1,4 @@
-// scripts/generar-json.js
+// scripts/generar-json.js (ES Module)
 import fetch from "node-fetch";
 import { Octokit } from "@octokit/rest";
 
@@ -9,12 +9,12 @@ const REPO = process.env.REPO;        // nombre del repo
 const PATH = "horarios.json";         // archivo a crear/actualizar
 const BRANCH = "main";                // rama
 
-// URL de la web donde ya está procesado el JSON
+// URL del JSON ya generado por la web
 const WEB_JSON_URL = "https://pa-tips.com/horarios-restaurantes-solicitud/horarios.json";
 
 async function generarYSubir() {
   try {
-    console.log("📡 Leyendo datos de la web...");
+    console.log("📡 Leyendo JSON desde la web...");
 
     const res = await fetch(WEB_JSON_URL);
     if (!res.ok) throw new Error(`Error al leer JSON de la web: ${res.status} ${res.statusText}`);
@@ -33,7 +33,7 @@ async function generarYSubir() {
       console.log("🔹 Archivo no existe, se creará nuevo");
     }
 
-    // Subir/actualizar archivo
+    // Subir/actualizar archivo en GitHub
     await octokit.repos.createOrUpdateFileContents({
       owner: OWNER,
       repo: REPO,
@@ -50,5 +50,5 @@ async function generarYSubir() {
   }
 }
 
-// ---------------- EJECUTAR ----------------
+// Ejecutar una vez
 generarYSubir();
