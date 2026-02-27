@@ -1,14 +1,16 @@
 const fetch = require("node-fetch");
 const { Octokit } = require("@octokit/rest");
 
+// ---------- CONFIGURACIÓN DESDE ENV ----------
 const API_URL = "https://api.adventurelabs.xyz/restaurants/";
-const API_KEY = process.env.API_KEY;       // tu clave Adventure Labs
-const TOKEN = process.env.TOKEN; // PAT con repo
-const OWNER = "TU_USUARIO";
-const REPO = "horarios-restaurantes";
-const PATH = "horarios.json";
-const BRANCH = "main";
+const API_KEY = process.env.API_KEY;       // clave de Adventure Labs
+const TOKEN = process.env.TOKEN;           // PAT con repo
+const OWNER = process.env.OWNER;           // tu usuario GitHub
+const REPO = process.env.REPO;             // repo donde estará horarios.json
+const PATH = process.env.PATH || "horarios.json";
+const BRANCH = process.env.BRANCH || "main";
 
+// ---------- MAPA DE NOMBRES ----------
 const nombreMap = {
   "Aloha": "Aloha",
   "Altai": "Altai",
@@ -58,7 +60,7 @@ const nombreMap = {
   "La Posada de los Gnomos": "La Posada de los Gnomos",
   "Loggers Creppe - You by Danone": "Loggers Creppe  - You by Danone",
   "Long Branch Saloon": "Long Branch Saloon",
-  " Marco Polo": "Marco Polo",
+  "Marco Polo": "Marco Polo",
   "Moll Vell": "Moll Vell",
   "Paddock": "Paddock",
   "Palma Real": "Palma Real",
@@ -80,23 +82,40 @@ const nombreMap = {
   "Zona Indoor - El Gran Caribe": "Zona Indoor - El Gran Caribe"
 };
 
+// ---------- FUNCIONES ----------
 async function generarYSubir() {
+  // 1️⃣ Obtener datos de Adventure Labs
   const res = await fetch(API_URL, { headers: { "x-api-key": API_KEY } });
   if (!res.ok) throw new Error("Error al obtener datos de Adventure Labs");
   const shops = await res.json();
 
-  const data = shops.map(shop => ({
-    nombre: nombreMap[shop.name] || shop.name,
-    horarios: (shop.schedule?.map(slot => `${slot.open} - ${slot.close}`) || [])
-  }));
+  // 2️⃣ Preparar JSON con horarios concatenados
+  const data = shops.map(shop => {
+    const nombre = nombreMap[shop.name] || shop.name;
+
+    let horariosText = [];
+    if (shop.schedule && shop.schedule.length > 0) {
+      horariosText = shop.schedule.map(slot => `${slot.open} - ${slot.close}`);
+    }
+    return {
+      nombre,
+      horarios: horariosText.length > 0 ? horariosText.join(" y ") : ""
+    };
+  });
 
   const jsonString = JSON.stringify(data, null, 2);
 
+  // 3️⃣ Subir a GitHub
   const octokit = new Octokit({ auth: TOKEN });
 
   let sha;
   try {
-    const existing = await octokit.repos.getContent({ owner: OWNER, repo: REPO, path: PATH, ref: BRANCH });
+    const existing = await octokit.repos.getContent({
+      owner: OWNER,
+      repo: REPO,
+      path: PATH,
+      ref: BRANCH
+    });
     sha = existing.data.sha;
   } catch (err) {
     console.log("Archivo no existe, se creará nuevo");
@@ -115,4 +134,5 @@ async function generarYSubir() {
   console.log("JSON actualizado correctamente");
 }
 
+// ---------- EJECUCIÓN ----------
 generarYSubir().catch(console.error);
