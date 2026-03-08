@@ -1,10 +1,12 @@
-name: Prueba JSON
+name: Actualizar horarios
 
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
-  prueba-json:
+  actualizar-json:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,11 +15,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Crear y subir JSON de prueba
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Generar y subir JSON
         env:
+          API_URL: https://api.adventurelabs.xyz/restaurants/
+          API_KEY: ${{ secrets.API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          FILE_PATH: horarios-prueba.json
+          FILE_PATH: horarios.json
           BRANCH: main
         run: |
           python - <<EOF
@@ -27,25 +34,112 @@ jobs:
           import requests
           from datetime import datetime
 
+          # Leer variables de entorno
+          api_url = os.getenv("API_URL")
+          api_key = os.getenv("API_KEY")
           token = os.getenv("GITHUB_TOKEN")
           repo = os.getenv("REPO")
           file_path = os.getenv("FILE_PATH")
           branch = os.getenv("BRANCH")
 
-          # Contenido de prueba
-          data = {"mensaje": "hola"}
+          # Obtener datos de restaurantes
+          headers = {"x-api-key": api_key}
+          resp = requests.get(api_url, headers=headers)
+          resp.raise_for_status()
+          shops = resp.json()
+
+          # Mapeo de nombres (igual que tu JS)
+          nombre_map = {
+  "Aloha": "Aloha",
+  "Altai": "Altai",
+  "Augustu's Biergarten": "Augustu's Biergarten",
+  "Beach Bar": "Beach Bar",
+  "Ben & Jerrys": "Ben & Jerrys",
+  "Black Smith": "Black Smith",
+  "Bora Bora": "Bora Bora",
+  "Bufalo": "Bufalo",
+  "Cactus Express": "Cactus Express",
+  "Café Saula": "Café Saula",
+  "Cafetería Bora Bora": "Cafetería Bora Bora",
+  "Canton": "Canton",
+  "Captain's Refuge": "Captain's Refuge",
+  "Cerveseria L'Estació": "Cerveseria L'Estació",
+  "Chickens' Stampida": "Chickens' Stampida",
+  "Cookie Monster Corner": "Cookie Monster Corner",
+  "Dagana": "Dagana",
+  "Dakini": "Dakini",
+  "Economato": "Economato",
+  "El Kaktus": "El Kaktus",
+  "El Molino": "El Molino",
+  "El Posit": "El Posit",
+  "Erawan": "Erawan",
+  "Finish Line": "Finish Line",
+  "Focacceria": "Focacceria",
+  "Fresh Island": "Fresh Island",
+  "Gran Caribe": "Gran Caribe",
+  "Grand Canyon Drinks": "Grand Canyon Drinks",
+  "Hacienda El Charro": "Hacienda El Charro",
+  "Happiness Station Caribe": "Happiness Station Caribe",
+  "Happiness Station China": "Happiness Station China",
+  "Heladería Carte D'or": "Heladería Carte D'or",
+  "Hot Dogs": "Hot Dogs",
+  "Ice Cream Box": "Ice Cream Box",
+  "Jeremias' Food": "Jeremias' Food",
+  "Jiangsu": "Jiangsu",
+  "King Kamehameha": "King Kamehameha",
+  "La Cabaña": "La Cabaña",
+  "La Cantina": "La Cantina",
+  "La Cantonada": "La Cantonada",
+  "La Cara": "La Cara",
+  "La Cocina de Epi": "La Cocina de Epi",
+  "La Glorieta - You by Danone": "La Glorieta - You by Danone",
+  "La Laguna de Woody": "La Laguna de Woody",
+  "LaLiga TwentyNine's": "LaLiga TwentyNine's",
+  "Loggers Creppe  - You by Danone": "Loggers Creppe  - You by Danone",
+  "Long Branch Saloon": "Long Branch Saloon",
+  " Marco Polo": "Marco Polo",
+  "Moll Vell": "Moll Vell",
+  "Paddock": "Paddock",
+  "Palma Real": "Palma Real",
+  "Pit Lane": "Pit Lane",
+  "Racó de Mar": "Racó de Mar",
+  "Reggae Café": "Reggae Café",
+  "Sichuan": "Sichuan",
+  "Spirello": "Spirello",
+  "Stop&Go": "Stop & Go",
+  "Stunt Pop Corn": "Stunt Pop Corn",
+  "Sweet House": "Sweet House by Nutella",
+  "Taquería La Catrina": "Taquería La Catrina",
+  "The Iron Horse": "The Iron Horse",
+  "The Old Steak House": "The Old Steak House",
+  "The Surfer": "The Surfer",
+  "Tropical Juice": "Tropical Juice",
+  "Vinosfera Tapes i Vins": "Vinosfera Tapes i Vins",
+  "Waitan": "Waitan",
+  "Zona Indoor - El Gran Caribe": "Zona Indoor - El Gran Caribe"
+          }
+
+          restaurantes = {}
+          for shop in shops:
+              nombre = nombre_map.get(shop["name"], shop["name"])
+              if shop.get("schedule"):
+                  horario = " y ".join([f"{s['open']} - {s['close']}" for s in shop["schedule"]])
+              else:
+                  horario = ""
+              restaurantes[nombre] = horario
+
+          data = {"fecha": datetime.utcnow().isoformat(), "restaurantes": restaurantes}
           json_content = json.dumps(data, indent=2)
 
-          # Revisar si el archivo existe
+          # Revisar si el archivo ya existe
           url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
           headers = {"Authorization": f"token {token}"}
           r = requests.get(url, headers=headers, params={"ref": branch})
+          sha = r.json()["sha"] if r.ok else None
 
-          sha = r.json().get("sha") if r.ok else None
-
-          # Subir o actualizar el archivo
+          # Subir archivo
           payload = {
-              "message": f"Prueba JSON {datetime.utcnow().isoformat()}",
+              "message": f"Actualizar horarios {datetime.utcnow().isoformat()}",
               "content": base64.b64encode(json_content.encode()).decode(),
               "branch": branch
           }
@@ -54,5 +148,5 @@ jobs:
 
           r = requests.put(url, headers=headers, json=payload)
           r.raise_for_status()
-          print("JSON de prueba actualizado correctamente")
+          print("JSON actualizado correctamente en GitHub")
           EOF
