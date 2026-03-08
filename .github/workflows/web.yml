@@ -24,7 +24,10 @@ jobs:
           API_URL: https://api.adventurelabs.xyz/restaurants/
           FILE_PATH: horarios.json
         run: |
-          response=$(curl -s -H "x-api-key: $API_KEY" $API_URL)
+          response=$(curl -s -X GET \
+          -H "x-api-key: $API_KEY" \
+          -H "Accept: application/json" \
+          $API_URL)
           echo "API KEY length:"
           echo ${#API_KEY}
 
