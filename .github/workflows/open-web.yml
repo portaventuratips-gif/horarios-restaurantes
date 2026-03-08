@@ -5,7 +5,8 @@
     FILE_PATH: horarios-prueba.json
     BRANCH: main
   run: |
-    echo "import os
+    cat <<'EOF' > script.py
+import os
 import json
 import base64
 import requests
@@ -35,6 +36,6 @@ if sha:
 r = requests.put(url, headers=headers, json=payload)
 r.raise_for_status()
 print('JSON de prueba actualizado correctamente')
-" > script.py
+EOF
 
     python script.py
