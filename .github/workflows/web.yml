@@ -1,27 +1,47 @@
 name: Generar JSON de horarios
-env:
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  generar-horarios:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar jq y wget
+        run: sudo apt-get update && sudo apt-get install -y jq wget
+
+      - name: Generar JSON de horarios
+        env:
           API_KEY: ${{ secrets.API_KEY }}
           API_URL: https://api.adventurelabs.xyz/restaurants/
           FILE_PATH: horarios.json
         run: |
-          # Obtener respuesta con wget y cabeceras
+          # Obtener respuesta de la API
           response=$(wget --header="x-api-key: $API_KEY" --header="Accept: application/json" -qO- "$API_URL")
 
-          echo "API KEY length:"
-          echo ${#API_KEY}
-
+          echo "API KEY length: ${#API_KEY}"
           echo "Respuesta de la API:"
           echo "$response"
-          
+
+          # Crear JSON con fecha
           echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
-          
+
           first=1
 
+          # Recorrer restaurantes
           echo "$response" | jq -c '.[]' | while read shop; do
             name=$(echo "$shop" | jq -r '.name')
             schedule=$(echo "$shop" | jq -c '.schedule')
 
-            # Mapeo completo de nombres (igual que antes)
+            # Mapeo completo de nombres
             case "$name" in
               "Aloha") mapped="Aloha";;
               "Altai") mapped="Altai";;
@@ -93,21 +113,32 @@ env:
               *) mapped="$name";;
             esac
 
+            # Formatear horarios
             if [ "$schedule" != "null" ] && [ "$schedule" != "[]" ]; then
               hours=$(echo "$schedule" | jq -r 'map("\(.open) - \(.close)") | join(" y ")')
             else
               hours=""
             fi
 
+            # Agregar coma si no es el primero
             if [ $first -eq 1 ]; then
               first=0
             else
               echo -n "," >> $FILE_PATH
             fi
 
+            # Escapar comillas en el nombre
             name_escaped=$(echo "$mapped" | sed 's/"/\\"/g')
             echo -n "\"$name_escaped\":\"$hours\"" >> $FILE_PATH
           done
 
           echo "}}" >> $FILE_PATH
           echo "JSON generado en $FILE_PATH"
+
+      - name: Commit y Push del JSON
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add horarios.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Actualizar horarios: $(date)"
+          git push
