@@ -56,7 +56,6 @@ nombre_map = {
   "Augustu's Biergarten": "Augustu's Biergarten",
   "Beach Bar": "Beach Bar",
   "Ben & Jerrys": "Ben & Jerrys"
-  # … puedes agregar todos tus nombres aquí
 }
 
 restaurantes = {}
