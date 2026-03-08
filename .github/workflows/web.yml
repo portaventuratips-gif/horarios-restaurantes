@@ -15,7 +15,7 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Instalar jq
+      - name: Instalar jq y curl
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
       - name: Generar JSON de horarios
@@ -25,24 +25,34 @@ jobs:
           FILE_PATH: horarios.json
         run: |
           response=$(curl -s -X GET \
-          -H "x-api-key: $API_KEY" \
-          -H "Accept: application/json" \
-          $API_URL)
-          echo "API KEY length:"
-          echo ${#API_KEY}
+            -H "x-api-key: $API_KEY" \
+            -H "Accept: application/json" \
+            "$API_URL")
 
+          echo "API KEY length: ${#API_KEY}"
           echo "Respuesta de la API:"
           echo "$response"
-          
-          echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
-          
-          first=1
 
-          echo "$response" | jq -c '.[]' | while read shop; do
+          # Validar JSON recibido
+          echo "$response" | jq empty
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Respuesta no es JSON válido"
+            exit 1
+          fi
+
+          fecha=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Crear JSON inicial con fecha y abrir objeto restaurantes
+          echo -n "{\"fecha\":\"$fecha\",\"restaurantes\":{" > "$FILE_PATH"
+
+          # Procesar respuesta sin usar pipe en while (usando un array en bash)
+          mapfile -t shops < <(echo "$response" | jq -c '.[]')
+
+          first=1
+          for shop in "${shops[@]}"; do
             name=$(echo "$shop" | jq -r '.name')
             schedule=$(echo "$shop" | jq -c '.schedule')
 
-            # Mapeo completo de nombres
             case "$name" in
               "Aloha") mapped="Aloha";;
               "Altai") mapped="Altai";;
@@ -91,7 +101,7 @@ jobs:
               "LaLiga TwentyNine's") mapped="LaLiga TwentyNine's";;
               "Loggers Creppe - You by Danone") mapped="Loggers Creppe - You by Danone";;
               "Long Branch Saloon") mapped="Long Branch Saloon";;
-              " Marco Polo") mapped="Marco Polo";;
+              "Marco Polo") mapped="Marco Polo";;
               "Moll Vell") mapped="Moll Vell";;
               "Paddock") mapped="Paddock";;
               "Palma Real") mapped="Palma Real";;
@@ -114,27 +124,26 @@ jobs:
               *) mapped="$name";;
             esac
 
-            # Formatear horarios
             if [ "$schedule" != "null" ] && [ "$schedule" != "[]" ]; then
               hours=$(echo "$schedule" | jq -r 'map("\(.open) - \(.close)") | join(" y ")')
             else
               hours=""
             fi
 
-            # Coma solo si no es el primer elemento
             if [ $first -eq 1 ]; then
               first=0
             else
-              echo -n "," >> $FILE_PATH
+              echo -n "," >> "$FILE_PATH"
             fi
 
-            # Escapar comillas
-            name_escaped=$(echo $mapped | sed 's/"/\\"/g')
-
-            echo -n "\"$name_escaped\":\"$hours\"" >> $FILE_PATH
+            # Escapar comillas en el nombre
+            name_escaped=$(echo "$mapped" | sed 's/"/\\"/g')
+            echo -n "\"$name_escaped\":\"$hours\"" >> "$FILE_PATH"
           done
 
-          echo "}" >> $FILE_PATH
+          # Cerrar objeto JSON
+          echo "}}" >> "$FILE_PATH"
+
           echo "JSON generado en $FILE_PATH"
 
       - name: Commit y Push del JSON
@@ -142,5 +151,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add horarios.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Actualizar horarios: $(date)"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Actualizar horarios: $(date -u)"
           git push
