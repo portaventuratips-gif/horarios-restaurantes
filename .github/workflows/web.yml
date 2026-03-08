@@ -26,19 +26,11 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           API_URL="https://api.adventurelabs.xyz/restaurants/"
-
-          SHOPS=$(curl -s -H "x-api-key: $API_KEY" "$API_URL")
+          # Obtener datos de la API
+          curl -s -H "x-api-key: $API_KEY" "$API_URL" | jq -c '.' > shops.json
 
           # Nombre map completo
-          jq -n --argjson shops "$SHOPS" '
-            ($shops | map(
-              {
-                name: .name,
-                schedule: (.schedule // [] | map("\(.open) - \(.close)") | join(" y "))
-              }
-            )) as $mapped |
-            
-            # Definir mapa de nombres
+          cat shops.json | jq -n --slurpfile shops shops.json '
             $nombreMap := {
               "Aloha": "Aloha",
               "Altai": "Altai",
@@ -107,16 +99,13 @@ jobs:
               "Vinosfera Tapes i Vins": "Vinosfera Tapes i Vins",
               "Waitan": "Waitan",
               "Zona Indoor - El Gran Caribe": "Zona Indoor - El Gran Caribe"
-            } |
-
-            # Construir JSON final
+            };
+            
             {
               fecha: now | strflocaltime("%Y-%m-%dT%H:%M:%SZ"),
-              restaurantes: ($mapped | map({ ($nombreMap[.name] // .name): .schedule }) | add)
+              restaurantes: ($shops | map({ ($nombreMap[.name] // .name): (.schedule // [] | map("\(.open) - \(.close)") | join(" y ")) }) | add)
             }
           ' > horarios.json
-
-          cat horarios.json
 
       - name: Commit y push
         run: |
