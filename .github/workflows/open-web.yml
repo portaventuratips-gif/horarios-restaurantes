@@ -1,34 +1,13 @@
-name: Actualizar horarios
-
-on:
-  schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
-
-jobs:
-  actualizar-json:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Instalar dependencias
-        run: |
-          pip install requests
-
-      - name: Generar y subir JSON
-        env:
-          API_URL: https://api.adventurelabs.xyz/restaurants/
-          API_KEY: ${{ secrets.API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          FILE_PATH: horarios.json
-          BRANCH: main
-        run: |
-          python - <<EOF
+- name: Generar y subir JSON
+  env:
+    API_URL: https://api.adventurelabs.xyz/restaurants/
+    API_KEY: ${{ secrets.API_KEY }}
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    REPO: ${{ github.repository }}
+    FILE_PATH: horarios.json
+    BRANCH: main
+  run: |
+    python - <<EOF
 import os
 import json
 import base64
