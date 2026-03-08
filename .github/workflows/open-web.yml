@@ -2,8 +2,8 @@ name: Abrir web cada ~5 minutos
 
 on:
   schedule:
-    - cron: '*/5 * * * *'       # Intenta cada 5 min (mínimo permitido)
-  workflow_dispatch:            # Para probar manualmente desde la web
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   abrir:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'   # o 3.12
+          python-version: '3.11'
 
       - name: Instalar dependencias
         run: |
@@ -24,31 +24,31 @@ jobs:
 
       - name: Ejecutar Selenium
         env:
-          TARGET_URL: ${{ secrets.TARGET_URL }}   # pon tu URL en Secrets (recomendado)
-        run: python -c "
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+          TARGET_URL: ${{ secrets.TARGET_URL }}
+        run: |
+          python - <<EOF
+          import os
+          import time
+          from selenium import webdriver
+          from selenium.webdriver.chrome.service import Service
+          from selenium.webdriver.chrome.options import Options
+          from webdriver_manager.chrome import ChromeDriverManager
 
-options = Options()
-options.add_argument('--headless=new')
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')
-options.add_argument('user-agent=Mozilla/5.0 ...')  # opcional
+          options = Options()
+          options.add_argument("--headless=new")
+          options.add_argument("--no-sandbox")
+          options.add_argument("--disable-dev-shm-usage")
 
-service = Service(ChromeDriverManager().install())
-driver = webdriver.Chrome(service=service, options=options)
+          service = Service(ChromeDriverManager().install())
+          driver = webdriver.Chrome(service=service, options=options)
 
-try:
-    url = '$TARGET_URL' or 'https://example.com'
-    print(f'[{time.strftime(\"%H:%M:%S\")}] Abriendo {url}')
-    driver.get(url)
-    time.sleep(5)  # espera carga
-    print('Título:', driver.title)
-except Exception as e:
-    print('Error:', str(e))
-finally:
-    driver.quit()
+          url = os.getenv("TARGET_URL", "https://example.com")
+
+          print(f"[{time.strftime('%H:%M:%S')}] Abriendo {url}")
+          driver.get(url)
+
+          time.sleep(5)
+          print("Título:", driver.title)
+
+          driver.quit()
+          EOF
