@@ -1,4 +1,4 @@
-name: Abrir web cada ~5 min
+name: Abrir web cada ~5 minutos
 
 on:
   schedule:
