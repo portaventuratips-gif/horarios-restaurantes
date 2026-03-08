@@ -1,58 +1,27 @@
-name: Generar JSON de horarios
-
-on:
-  schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
-
-jobs:
-  generar-horarios:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
-
-      - name: Instalar jq y curl
-        run: sudo apt-get update && sudo apt-get install -y jq curl
-
       - name: Generar JSON de horarios
         env:
           API_KEY: ${{ secrets.API_KEY }}
           API_URL: https://api.adventurelabs.xyz/restaurants/
           FILE_PATH: horarios.json
         run: |
-          response=$(curl -s -X GET \
-            -H "x-api-key: $API_KEY" \
-            -H "Accept: application/json" \
-            "$API_URL")
+          # Obtener respuesta con wget y cabeceras
+          response=$(wget --header="x-api-key: $API_KEY" --header="Accept: application/json" -qO- "$API_URL")
 
-          echo "API KEY length: ${#API_KEY}"
+          echo "API KEY length:"
+          echo ${#API_KEY}
+
           echo "Respuesta de la API:"
           echo "$response"
-
-          # Validar JSON recibido
-          echo "$response" | jq empty
-          if [ $? -ne 0 ]; then
-            echo "ERROR: Respuesta no es JSON válido"
-            exit 1
-          fi
-
-          fecha=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          # Crear JSON inicial con fecha y abrir objeto restaurantes
-          echo -n "{\"fecha\":\"$fecha\",\"restaurantes\":{" > "$FILE_PATH"
-
-          # Procesar respuesta sin usar pipe en while (usando un array en bash)
-          mapfile -t shops < <(echo "$response" | jq -c '.[]')
-
+          
+          echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
+          
           first=1
-          for shop in "${shops[@]}"; do
+
+          echo "$response" | jq -c '.[]' | while read shop; do
             name=$(echo "$shop" | jq -r '.name')
             schedule=$(echo "$shop" | jq -c '.schedule')
 
+            # Mapeo completo de nombres (igual que antes)
             case "$name" in
               "Aloha") mapped="Aloha";;
               "Altai") mapped="Altai";;
@@ -101,7 +70,7 @@ jobs:
               "LaLiga TwentyNine's") mapped="LaLiga TwentyNine's";;
               "Loggers Creppe - You by Danone") mapped="Loggers Creppe - You by Danone";;
               "Long Branch Saloon") mapped="Long Branch Saloon";;
-              "Marco Polo") mapped="Marco Polo";;
+              " Marco Polo") mapped="Marco Polo";;
               "Moll Vell") mapped="Moll Vell";;
               "Paddock") mapped="Paddock";;
               "Palma Real") mapped="Palma Real";;
@@ -133,23 +102,12 @@ jobs:
             if [ $first -eq 1 ]; then
               first=0
             else
-              echo -n "," >> "$FILE_PATH"
+              echo -n "," >> $FILE_PATH
             fi
 
-            # Escapar comillas en el nombre
             name_escaped=$(echo "$mapped" | sed 's/"/\\"/g')
-            echo -n "\"$name_escaped\":\"$hours\"" >> "$FILE_PATH"
+            echo -n "\"$name_escaped\":\"$hours\"" >> $FILE_PATH
           done
 
-          # Cerrar objeto JSON
-          echo "}}" >> "$FILE_PATH"
-
+          echo "}}" >> $FILE_PATH
           echo "JSON generado en $FILE_PATH"
-
-      - name: Commit y Push del JSON
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add horarios.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Actualizar horarios: $(date -u)"
-          git push
