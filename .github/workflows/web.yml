@@ -25,6 +25,9 @@ jobs:
           FILE_PATH: horarios.json
         run: |
           response=$(curl -s -H "x-api-key: $API_KEY" $API_URL)
+          echo "API KEY length:"
+          echo ${#API_KEY}
+
           echo "Respuesta de la API:"
           echo "$response"
           
