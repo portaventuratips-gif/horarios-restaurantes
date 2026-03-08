@@ -7,7 +7,7 @@
     FILE_PATH: horarios.json
     BRANCH: main
   run: |
-    python - <<EOF
+python - <<EOF
 import os
 import json
 import base64
