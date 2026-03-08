@@ -24,12 +24,10 @@ jobs:
           API_URL: https://api.adventurelabs.xyz/restaurants/
           FILE_PATH: horarios.json
         run: |
-          # Obtener datos de la API
           response=$(curl -s -H "x-api-key: $API_KEY" "$API_URL")
 
-          # Generar JSON completo con jq
-          echo "$response" | jq --arg fecha "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '
-            # Mapa de nombres
+          echo "$response" | jq -c --arg fecha "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '
+            # Mapa de nombres dentro de jq
             def nombreMap:
               {
                 "Aloha": "Aloha",
@@ -100,16 +98,13 @@ jobs:
                 "Waitan": "Waitan",
                 "Zona Indoor - El Gran Caribe": "Zona Indoor - El Gran Caribe"
               };
-            
-            # Construir objeto de restaurantes
+
+            # Construir objeto restaurantes
             {
               fecha: $fecha,
-              restaurantes: map(
-                { 
-                  ($nombreMap[.name] // .name): 
-                    (.schedule // [] | map("\(.open) - \(.close)") | join(" y "))
-                }
-              ) | add
+              restaurantes: (map({ 
+                ($nombreMap[.name] // .name): (.schedule // [] | map("\(.open) - \(.close)") | join(" y "))
+              }) | add)
             }
           ' > $FILE_PATH
 
