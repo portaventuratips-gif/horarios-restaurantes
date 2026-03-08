@@ -24,18 +24,20 @@ jobs:
           API_URL: https://api.adventurelabs.xyz/restaurants/
           FILE_PATH: horarios.json
         run: |
-          # Guardar la respuesta cruda en un archivo temporal
+          # Guardar la respuesta de la API en un archivo
           curl -s -H "x-api-key: $API_KEY" "$API_URL" > response.json
 
-          # Verificar que sea JSON válido
+          # Verificar JSON válido
           if ! jq empty response.json; then
             echo "ERROR: la API no devolvió JSON válido"
             cat response.json
             exit 1
           fi
 
-          # Construir el JSON final
+          # Fecha actual en UTC
           fecha=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Generar JSON final con jq
           jq --arg fecha "$fecha" '
             # Mapa de nombres
             $nombreMap = {
@@ -66,7 +68,7 @@ jobs:
 
             {
               fecha: $fecha,
-              restaurantes: (input | map({($nombreMap[.name] // .name): (.schedule // [] | map("\(.open) - \(.close)") | join(" y "))}) | add)
+              restaurantes: (map({ ($nombreMap[.name] // .name) : (.schedule // [] | map("\(.open) - \(.close)") | join(" y ")) }) | add)
             }
           ' response.json > $FILE_PATH
 
