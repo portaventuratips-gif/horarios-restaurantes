@@ -4,7 +4,7 @@
     API_KEY: ${{ secrets.API_KEY }}
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     REPO: ${{ github.repository }}
-    FILE_PATH: horarios.json
+    FILE_PATH: horarios-prueba.json
     BRANCH: main
   run: |
 python - <<EOF
@@ -14,40 +14,15 @@ import base64
 import requests
 from datetime import datetime
 
+# Contenido de prueba
+data = {"mensaje": "hola"}
+json_content = json.dumps(data, indent=2)
+
 # Leer variables de entorno
-api_url = os.getenv("API_URL")
-api_key = os.getenv("API_KEY")
 token = os.getenv("GITHUB_TOKEN")
 repo = os.getenv("REPO")
 file_path = os.getenv("FILE_PATH")
 branch = os.getenv("BRANCH")
-
-# Obtener datos de restaurantes
-headers = {"x-api-key": api_key}
-resp = requests.get(api_url, headers=headers)
-resp.raise_for_status()
-shops = resp.json()
-
-# Mapeo de nombres
-nombre_map = {
-  "Aloha": "Aloha",
-  "Altai": "Altai",
-  "Augustu's Biergarten": "Augustu's Biergarten",
-  "Beach Bar": "Beach Bar",
-  "Ben & Jerrys": "Ben & Jerrys"
-}
-
-restaurantes = {}
-for shop in shops:
-    nombre = nombre_map.get(shop["name"], shop["name"])
-    if shop.get("schedule"):
-        horario = " y ".join([f"{s['open']} - {s['close']}" for s in shop["schedule"]])
-    else:
-        horario = ""
-    restaurantes[nombre] = horario
-
-data = {"fecha": datetime.utcnow().isoformat(), "restaurantes": restaurantes}
-json_content = json.dumps(data, indent=2)
 
 # Revisar si el archivo ya existe
 url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
@@ -57,7 +32,7 @@ sha = r.json().get("sha") if r.ok else None
 
 # Subir archivo
 payload = {
-    "message": f"Actualizar horarios {datetime.utcnow().isoformat()}",
+    "message": f"Prueba JSON {datetime.utcnow().isoformat()}",
     "content": base64.b64encode(json_content.encode()).decode(),
     "branch": branch
 }
@@ -66,5 +41,5 @@ if sha:
 
 r = requests.put(url, headers=headers, json=payload)
 r.raise_for_status()
-print("JSON actualizado correctamente en GitHub")
+print("JSON de prueba actualizado correctamente")
 EOF
