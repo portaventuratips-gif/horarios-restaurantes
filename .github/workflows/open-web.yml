@@ -1,4 +1,4 @@
-name: Abrir web cada ~5 minutos
+name: Ejecutar generador de horarios
 
 on:
   schedule:
@@ -6,23 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  abrir:
+  abrir-pagina:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Instalar dependencias
+      - name: Instalar Selenium
         run: |
-          python -m pip install --upgrade pip
           pip install selenium webdriver-manager
 
-      - name: Ejecutar Selenium
+      - name: Abrir página y ejecutar JS
         env:
           TARGET_URL: ${{ secrets.TARGET_URL }}
         run: |
@@ -30,25 +27,28 @@ jobs:
           import os
           import time
           from selenium import webdriver
-          from selenium.webdriver.chrome.service import Service
           from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.chrome.service import Service
           from webdriver_manager.chrome import ChromeDriverManager
+
+          url = os.getenv("TARGET_URL")
 
           options = Options()
           options.add_argument("--headless=new")
           options.add_argument("--no-sandbox")
           options.add_argument("--disable-dev-shm-usage")
 
-          service = Service(ChromeDriverManager().install())
-          driver = webdriver.Chrome(service=service, options=options)
+          driver = webdriver.Chrome(
+              service=Service(ChromeDriverManager().install()),
+              options=options
+          )
 
-          url = os.getenv("TARGET_URL", "https://example.com")
-
-          print(f"[{time.strftime('%H:%M:%S')}] Abriendo {url}")
+          print("Abriendo:", url)
           driver.get(url)
 
-          time.sleep(5)
-          print("Título:", driver.title)
+          # Esperar para que el JS genere y suba el JSON
+          time.sleep(70)
 
+          print("Página ejecutada correctamente")
           driver.quit()
           EOF
