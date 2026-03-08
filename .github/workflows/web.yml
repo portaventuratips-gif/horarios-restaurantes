@@ -25,11 +25,11 @@ jobs:
           FILE_PATH: horarios.json
         run: |
           response=$(curl -s -H "x-api-key: $API_KEY" $API_URL)
-          echo "$response" | jq
-
-          # Crear JSON vacío con fecha
+          echo "Respuesta de la API:"
+          echo "$response"
+          
           echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
-
+          
           first=1
 
           echo "$response" | jq -c '.[]' | while read shop; do
