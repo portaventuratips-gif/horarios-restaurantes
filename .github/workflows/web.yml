@@ -1,113 +1,113 @@
-      name: Generar JSON de horarios
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
-        API_URL: https://api.adventurelabs.xyz/restaurants/
-        FILE_PATH: horarios.json
-      run: |
-        # Obtener respuesta con wget y cabeceras
-        response=$(wget --header="x-api-key: $API_KEY" --header="Accept: application/json" -qO- "$API_URL")
+name: Generar JSON de horarios
+env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_URL: https://api.adventurelabs.xyz/restaurants/
+          FILE_PATH: horarios.json
+        run: |
+          # Obtener respuesta con wget y cabeceras
+          response=$(wget --header="x-api-key: $API_KEY" --header="Accept: application/json" -qO- "$API_URL")
 
-        echo "API KEY length:"
-        echo ${#API_KEY}
+          echo "API KEY length:"
+          echo ${#API_KEY}
 
-        echo "Respuesta de la API:"
-        echo "$response"
-        
-        echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
-        
-        first=1
+          echo "Respuesta de la API:"
+          echo "$response"
+          
+          echo -n '{"fecha":"'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'","restaurantes":{' > $FILE_PATH
+          
+          first=1
 
-        echo "$response" | jq -c '.[]' | while read shop; do
-          name=$(echo "$shop" | jq -r '.name')
-          schedule=$(echo "$shop" | jq -c '.schedule')
+          echo "$response" | jq -c '.[]' | while read shop; do
+            name=$(echo "$shop" | jq -r '.name')
+            schedule=$(echo "$shop" | jq -c '.schedule')
 
-          # Mapeo completo de nombres (igual que antes)
-          case "$name" in
-            "Aloha") mapped="Aloha";;
-            "Altai") mapped="Altai";;
-            "Augustu's Biergarten") mapped="Augustu's Biergarten";;
-            "Beach Bar") mapped="Beach Bar";;
-            "Ben & Jerrys") mapped="Ben & Jerrys";;
-            "Black Smith") mapped="Black Smith";;
-            "Bora Bora") mapped="Bora Bora";;
-            "Bufalo") mapped="Bufalo";;
-            "Cactus Express") mapped="Cactus Express";;
-            "Café Saula") mapped="Café Saula";;
-            "Cafetería Bora Bora") mapped="Cafetería Bora Bora";;
-            "Canton") mapped="Canton";;
-            "Captain's Refuge") mapped="Captain's Refuge";;
-            "Cerveseria L'Estació") mapped="Cerveseria L'Estació";;
-            "Chickens' Stampida") mapped="Chickens' Stampida";;
-            "Cookie Monster Corner") mapped="Cookie Monster Corner";;
-            "Dagana") mapped="Dagana";;
-            "Dakini") mapped="Dakini";;
-            "Economato") mapped="Economato";;
-            "El Kaktus") mapped="El Kaktus";;
-            "El Molino") mapped="El Molino";;
-            "El Posit") mapped="El Posit";;
-            "Erawan") mapped="Erawan";;
-            "Finish Line") mapped="Finish Line";;
-            "Focacceria") mapped="Focacceria";;
-            "Fresh Island") mapped="Fresh Island";;
-            "Gran Caribe") mapped="Gran Caribe";;
-            "Grand Canyon Drinks") mapped="Grand Canyon Drinks";;
-            "Hacienda El Charro") mapped="Hacienda El Charro";;
-            "Happiness Station Caribe") mapped="Happiness Station Caribe";;
-            "Happiness Station China") mapped="Happiness Station China";;
-            "Heladería Carte D'or") mapped="Heladería Carte D'or";;
-            "Hot Dogs") mapped="Hot Dogs";;
-            "Ice Cream Box") mapped="Ice Cream Box";;
-            "Jeremias' Food") mapped="Jeremias' Food";;
-            "Jiangsu") mapped="Jiangsu";;
-            "King Kamehameha") mapped="King Kamehameha";;
-            "La Cabaña") mapped="La Cabaña";;
-            "La Cantina") mapped="La Cantina";;
-            "La Cantonada") mapped="La Cantonada";;
-            "La Cara") mapped="La Cara";;
-            "La Cocina de Epi") mapped="La Cocina de Epi";;
-            "La Glorieta - You by Danone") mapped="La Glorieta - You by Danone";;
-            "La Laguna de Woody") mapped="La Laguna de Woody";;
-            "LaLiga TwentyNine's") mapped="LaLiga TwentyNine's";;
-            "Loggers Creppe - You by Danone") mapped="Loggers Creppe - You by Danone";;
-            "Long Branch Saloon") mapped="Long Branch Saloon";;
-            " Marco Polo") mapped="Marco Polo";;
-            "Moll Vell") mapped="Moll Vell";;
-            "Paddock") mapped="Paddock";;
-            "Palma Real") mapped="Palma Real";;
-            "Pit Lane") mapped="Pit Lane";;
-            "Racó de Mar") mapped="Racó de Mar";;
-            "Reggae Café") mapped="Reggae Café";;
-            "Sichuan") mapped="Sichuan";;
-            "Spirello") mapped="Spirello";;
-            "Stop&Go") mapped="Stop & Go";;
-            "Stunt Pop Corn") mapped="Stunt Pop Corn";;
-            "Sweet House") mapped="Sweet House by Nutella";;
-            "Taquería La Catrina") mapped="Taquería La Catrina";;
-            "The Iron Horse") mapped="The Iron Horse";;
-            "The Old Steak House") mapped="The Old Steak House";;
-            "The Surfer") mapped="The Surfer";;
-            "Tropical Juice") mapped="Tropical Juice";;
-            "Vinosfera Tapes i Vins") mapped="Vinosfera Tapes i Vins";;
-            "Waitan") mapped="Waitan";;
-            "Zona Indoor - El Gran Caribe") mapped="Zona Indoor - El Gran Caribe";;
-            *) mapped="$name";;
-          esac
+            # Mapeo completo de nombres (igual que antes)
+            case "$name" in
+              "Aloha") mapped="Aloha";;
+              "Altai") mapped="Altai";;
+              "Augustu's Biergarten") mapped="Augustu's Biergarten";;
+              "Beach Bar") mapped="Beach Bar";;
+              "Ben & Jerrys") mapped="Ben & Jerrys";;
+              "Black Smith") mapped="Black Smith";;
+              "Bora Bora") mapped="Bora Bora";;
+              "Bufalo") mapped="Bufalo";;
+              "Cactus Express") mapped="Cactus Express";;
+              "Café Saula") mapped="Café Saula";;
+              "Cafetería Bora Bora") mapped="Cafetería Bora Bora";;
+              "Canton") mapped="Canton";;
+              "Captain's Refuge") mapped="Captain's Refuge";;
+              "Cerveseria L'Estació") mapped="Cerveseria L'Estació";;
+              "Chickens' Stampida") mapped="Chickens' Stampida";;
+              "Cookie Monster Corner") mapped="Cookie Monster Corner";;
+              "Dagana") mapped="Dagana";;
+              "Dakini") mapped="Dakini";;
+              "Economato") mapped="Economato";;
+              "El Kaktus") mapped="El Kaktus";;
+              "El Molino") mapped="El Molino";;
+              "El Posit") mapped="El Posit";;
+              "Erawan") mapped="Erawan";;
+              "Finish Line") mapped="Finish Line";;
+              "Focacceria") mapped="Focacceria";;
+              "Fresh Island") mapped="Fresh Island";;
+              "Gran Caribe") mapped="Gran Caribe";;
+              "Grand Canyon Drinks") mapped="Grand Canyon Drinks";;
+              "Hacienda El Charro") mapped="Hacienda El Charro";;
+              "Happiness Station Caribe") mapped="Happiness Station Caribe";;
+              "Happiness Station China") mapped="Happiness Station China";;
+              "Heladería Carte D'or") mapped="Heladería Carte D'or";;
+              "Hot Dogs") mapped="Hot Dogs";;
+              "Ice Cream Box") mapped="Ice Cream Box";;
+              "Jeremias' Food") mapped="Jeremias' Food";;
+              "Jiangsu") mapped="Jiangsu";;
+              "King Kamehameha") mapped="King Kamehameha";;
+              "La Cabaña") mapped="La Cabaña";;
+              "La Cantina") mapped="La Cantina";;
+              "La Cantonada") mapped="La Cantonada";;
+              "La Cara") mapped="La Cara";;
+              "La Cocina de Epi") mapped="La Cocina de Epi";;
+              "La Glorieta - You by Danone") mapped="La Glorieta - You by Danone";;
+              "La Laguna de Woody") mapped="La Laguna de Woody";;
+              "LaLiga TwentyNine's") mapped="LaLiga TwentyNine's";;
+              "Loggers Creppe - You by Danone") mapped="Loggers Creppe - You by Danone";;
+              "Long Branch Saloon") mapped="Long Branch Saloon";;
+              " Marco Polo") mapped="Marco Polo";;
+              "Moll Vell") mapped="Moll Vell";;
+              "Paddock") mapped="Paddock";;
+              "Palma Real") mapped="Palma Real";;
+              "Pit Lane") mapped="Pit Lane";;
+              "Racó de Mar") mapped="Racó de Mar";;
+              "Reggae Café") mapped="Reggae Café";;
+              "Sichuan") mapped="Sichuan";;
+              "Spirello") mapped="Spirello";;
+              "Stop&Go") mapped="Stop & Go";;
+              "Stunt Pop Corn") mapped="Stunt Pop Corn";;
+              "Sweet House") mapped="Sweet House by Nutella";;
+              "Taquería La Catrina") mapped="Taquería La Catrina";;
+              "The Iron Horse") mapped="The Iron Horse";;
+              "The Old Steak House") mapped="The Old Steak House";;
+              "The Surfer") mapped="The Surfer";;
+              "Tropical Juice") mapped="Tropical Juice";;
+              "Vinosfera Tapes i Vins") mapped="Vinosfera Tapes i Vins";;
+              "Waitan") mapped="Waitan";;
+              "Zona Indoor - El Gran Caribe") mapped="Zona Indoor - El Gran Caribe";;
+              *) mapped="$name";;
+            esac
 
-          if [ "$schedule" != "null" ] && [ "$schedule" != "[]" ]; then
-            hours=$(echo "$schedule" | jq -r 'map("\(.open) - \(.close)") | join(" y ")')
-          else
-            hours=""
-          fi
+            if [ "$schedule" != "null" ] && [ "$schedule" != "[]" ]; then
+              hours=$(echo "$schedule" | jq -r 'map("\(.open) - \(.close)") | join(" y ")')
+            else
+              hours=""
+            fi
 
-          if [ $first -eq 1 ]; then
-            first=0
-          else
-            echo -n "," >> $FILE_PATH
-          fi
+            if [ $first -eq 1 ]; then
+              first=0
+            else
+              echo -n "," >> $FILE_PATH
+            fi
 
-          name_escaped=$(echo "$mapped" | sed 's/"/\\"/g')
-          echo -n "\"$name_escaped\":\"$hours\"" >> $FILE_PATH
-        done
+            name_escaped=$(echo "$mapped" | sed 's/"/\\"/g')
+            echo -n "\"$name_escaped\":\"$hours\"" >> $FILE_PATH
+          done
 
-        echo "}}" >> $FILE_PATH
-        echo "JSON generado en $FILE_PATH"
+          echo "}}" >> $FILE_PATH
+          echo "JSON generado en $FILE_PATH"
